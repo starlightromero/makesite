@@ -1,15 +1,21 @@
 package main
 
 import (
-  "fmt"
-  "io/ioutil"
+	"fmt"
+	"io/ioutil"
+	"log"
 )
 
 func main() {
 	fmt.Println("Hello, world!")
-  fileContents, err := ioutil.ReadFile("first-post.txt")
-  if err != nil {
-    panic(err)
-  }
-  fmt.Print(string(fileContents))
+	fileContents := readFile("first-post.txt")
+	fmt.Print(string(fileContents))
+}
+
+func readFile(file string) []byte {
+	fileContents, err := ioutil.ReadFile(file)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return fileContents
 }
