@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"html/template"
 	"log"
 	"os"
@@ -14,19 +15,24 @@ type Data struct {
 
 func main() {
 	var filename string
+	var directory string
 
 	flag.StringVar(&filename, "f", "", "name of file to write to html")
 	flag.StringVar(&filename, "file", "", "name of file to write to html")
 
-	flag.StringVar(&filename, "d", "", "name of directory to get all txt files")
-	flag.StringVar(&filename, "dir", "", "name of directory to get all txt files")
+	flag.StringVar(&directory, "d", "", "name of directory to get all txt files")
+	flag.StringVar(&directory, "dir", "", "name of directory to get all txt files")
 
 	flag.Parse()
+
+	if directory != "" {
+		printAllTxtFiles(directory)
+	}
 
 	fileContent := readFile(filename)
 	fileToWrite := strings.SplitN(filename, ".", 2)[0]
 
-	writeTemplate("template.tmpl", fileToWrite, string(fileContent))
+	writeToHTML("template.tmpl", fileToWrite, string(fileContent))
 }
 
 func readFile(file string) []byte {
@@ -37,7 +43,7 @@ func readFile(file string) []byte {
 	return content
 }
 
-func writeTemplate(tmpl, filename, fileContent string) {
+func writeToHTML(tmpl, filename, fileContent string) {
 	data := Data{fileContent}
 
 	htmlFile, osErr := os.Create(filename + ".html")
@@ -50,4 +56,22 @@ func writeTemplate(tmpl, filename, fileContent string) {
 	if execErr != nil {
 		log.Fatal(execErr)
 	}
+}
+
+func printAllTxtFiles(directory string) {
+	files, err := os.ReadDir(directory)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for _, file := range files {
+		if isTxt(file.Name()) {
+			fmt.Println(file.Name())
+		}
+	}
+}
+
+func isTxt(filename string) bool {
+	fileExt := filename[len(filename)-4:]
+	return fileExt == ".txt"
 }
