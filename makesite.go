@@ -18,6 +18,9 @@ func main() {
 	flag.StringVar(&filename, "f", "", "name of file to write to html")
 	flag.StringVar(&filename, "file", "", "name of file to write to html")
 
+	flag.StringVar(&filename, "d", "", "name of directory to get all txt files")
+	flag.StringVar(&filename, "dir", "", "name of directory to get all txt files")
+
 	flag.Parse()
 
 	fileContent := readFile(filename)
