@@ -1,9 +1,11 @@
 package main
 
 import (
+	"flag"
 	"html/template"
 	"log"
 	"os"
+	"strings"
 )
 
 type Data struct {
@@ -11,8 +13,17 @@ type Data struct {
 }
 
 func main() {
-	fileContent := readFile("first-post.txt")
-	writeTemplate("template.tmpl", "first-post", string(fileContent))
+	var filename string
+
+	flag.StringVar(&filename, "f", "", "name of file to write to html")
+	flag.StringVar(&filename, "file", "", "name of file to write to html")
+
+	flag.Parse()
+
+	fileContent := readFile(filename)
+	fileToWrite := strings.SplitN(filename, ".", 2)[0]
+
+	writeTemplate("template.tmpl", fileToWrite, string(fileContent))
 }
 
 func readFile(file string) []byte {
