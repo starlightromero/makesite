@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"html/template"
 	"log"
 	"os"
@@ -20,8 +19,8 @@ func main() {
 	flag.StringVar(&filename, "f", "", "name of file to write to html")
 	flag.StringVar(&filename, "file", "", "name of file to write to html")
 
-	flag.StringVar(&directory, "d", "", "name of directory to get all txt files")
-	flag.StringVar(&directory, "dir", "", "name of directory to get all txt files")
+	flag.StringVar(&directory, "d", "", "name of directory to get all txt files to write to html")
+	flag.StringVar(&directory, "dir", "", "name of directory to get all txt files to write to html")
 
 	flag.Parse()
 
@@ -29,10 +28,12 @@ func main() {
 		printAllTxtFiles(directory)
 	}
 
-	fileContent := readFile(filename)
-	fileToWrite := strings.SplitN(filename, ".", 2)[0]
+	if filename != "" {
+		fileContent := readFile(filename)
+		fileToWrite := stripExt(filename)
 
-	writeToHTML("template.tmpl", fileToWrite, string(fileContent))
+		writeToHTML("template.tmpl", fileToWrite, string(fileContent))
+	}
 }
 
 func readFile(file string) []byte {
@@ -66,7 +67,9 @@ func printAllTxtFiles(directory string) {
 
 	for _, file := range files {
 		if isTxt(file.Name()) {
-			fmt.Println(file.Name())
+			filename := stripExt(file.Name())
+			fileContent := readFile(file.Name())
+			writeToHTML("template.tmpl", filename, string(fileContent))
 		}
 	}
 }
@@ -74,4 +77,8 @@ func printAllTxtFiles(directory string) {
 func isTxt(filename string) bool {
 	fileExt := filename[len(filename)-4:]
 	return fileExt == ".txt"
+}
+
+func stripExt(filename string) string {
+	return strings.SplitN(filename, ".", 2)[0]
 }
