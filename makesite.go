@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/fatih/color"
 )
@@ -20,6 +21,8 @@ func main() {
 	var directory string
 	var fileCount int
 	var fileSize float64
+
+	start := time.Now()
 
 	flag.StringVar(&filename, "f", "", "name of file to write to html")
 	flag.StringVar(&filename, "file", "", "name of file to write to html")
@@ -49,10 +52,14 @@ func main() {
 	white := color.New(color.FgWhite)
 	boldWhite := color.New(color.FgWhite, color.Bold)
 
+	end := time.Now()
+	elapsed := end.Sub(start)
+	milliseconds := elapsed.Seconds() / 1000.0
+
 	boldGreen.Print("Success! ")
 	white.Print("Generated ")
 	boldWhite.Print(fileCount)
-	white.Printf(" pages (%.1fkB total).", fileSize)
+	white.Printf(" pages (%.1fkB total) in %.2f milliseconds.", fileSize, milliseconds)
 
 }
 
