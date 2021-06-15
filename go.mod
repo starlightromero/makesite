@@ -1,4 +1,4 @@
-module makesite
+module github.com/starlightromero/makesite
 
 go 1.16
 
