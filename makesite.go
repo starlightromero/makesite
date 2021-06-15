@@ -4,7 +4,6 @@ import (
 	"flag"
 	"fmt"
 	"html/template"
-	"log"
 	"os"
 	"strings"
 	"time"
@@ -15,6 +14,13 @@ import (
 type Data struct {
 	Content string
 }
+
+var (
+	white     *color.Color = color.New(color.FgWhite)
+	boldWhite *color.Color = color.New(color.FgWhite, color.Bold)
+	boldGreen *color.Color = color.New(color.FgGreen, color.Bold)
+	boldRed   *color.Color = color.New(color.FgRed, color.Bold)
+)
 
 func main() {
 	var filename string
@@ -46,26 +52,17 @@ func main() {
 		os.Exit(1)
 	}
 
-	boldGreen := color.New(color.FgGreen, color.Bold)
-	white := color.New(color.FgWhite)
-	boldWhite := color.New(color.FgWhite, color.Bold)
-
 	end := time.Now()
 	elapsed := end.Sub(start)
 	milliseconds := elapsed.Seconds() / 1000.0
 
-	boldGreen.Print("Success! ")
-	white.Print("Generated ")
-	boldWhite.Print(fileCount)
-	white.Printf(" pages (%.1fkB total) in %.2f milliseconds.", fileSize, milliseconds)
+	printSuccess(fileCount, fileSize, milliseconds)
 
 }
 
 func readFile(file string) []byte {
 	content, err := os.ReadFile(file)
-	if err != nil {
-		log.Fatal(err)
-	}
+	checkError(err)
 	return content
 }
 
@@ -74,15 +71,11 @@ func writeToHTML(tmpl, filePath, fileContent string) (int, float64) {
 
 	htmlFilePath := strings.SplitN(filePath, ".", 2)[0] + ".html"
 	htmlFile, osErr := os.Create(htmlFilePath)
-	if osErr != nil {
-		log.Fatal(osErr)
-	}
+	checkError(osErr)
 
 	t := template.Must(template.ParseFiles(tmpl))
 	execErr := t.Execute(htmlFile, data)
-	if execErr != nil {
-		log.Fatal(execErr)
-	}
+	checkError(execErr)
 
 	return 1, getFileSize(htmlFilePath)
 }
@@ -92,17 +85,13 @@ func writeAllFilesToHTML(directory string) (int, float64) {
 	var fileSize float64
 
 	files, err := os.ReadDir(directory)
-	if err != nil {
-		log.Fatal(err)
-	}
+	checkError(err)
 
 	for _, file := range files {
 		path := directory + "/" + file.Name()
 
 		info, statErr := os.Stat(path)
-		if statErr != nil {
-			log.Fatal(statErr)
-		}
+		checkError(statErr)
 
 		if info.IsDir() {
 			writeAllFilesToHTML(path)
@@ -126,14 +115,29 @@ func isTxt(filename string) bool {
 
 func getFileSize(filename string) float64 {
 	file, openErr := os.Open(filename)
-	if openErr != nil {
-		log.Fatal(openErr)
-	}
+	checkError(openErr)
 
 	size, seekErr := file.Seek(0, 2)
-	if seekErr != nil {
-		log.Fatal(seekErr)
-	}
+	checkError(seekErr)
 
 	return float64(size) / 1024.0
+}
+
+func checkError(err error) {
+	if err != nil {
+		printError(err)
+	}
+}
+
+func printSuccess(fileCount int, fileSize, timeEllapsed float64) {
+	boldGreen.Print("Success! ")
+	white.Print("Generated ")
+	boldWhite.Print(fileCount)
+	white.Printf(" pages (%.1fkB total) in %.2f milliseconds.", fileSize, timeEllapsed)
+}
+
+func printError(err error) {
+	boldRed.Print("Error! ")
+	white.Println(err)
+	os.Exit(1)
 }
