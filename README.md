@@ -87,7 +87,7 @@ If you get stuck on any step, be sure to print the output to `stdout`!
 
 #### v1.2 Requirements
 
-- [ ] Initialize Go modules in your project.
+- [x] Initialize Go modules in your project.
 - [ ] Add any third party library to your project to enhance it's functionality. Some ideas you might consider include **_(CHOOSE ONLY ONE)_**:
     - [ ] Translating page content using Google Translate.
     - [ ] Parse Markdown (`.md`) files and transform them into HTML. `#` through `######` should translate to `<h1>` through `<h6>` elements.
