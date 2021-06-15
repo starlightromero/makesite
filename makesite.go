@@ -38,9 +38,7 @@ func main() {
 
 	if filename != "" {
 		fileContent := readFile(filename)
-		fileToWrite := stripExt(filename)
-
-		fileCount, fileSize = writeToHTML("template.tmpl", fileToWrite, string(fileContent))
+		fileCount, fileSize = writeToHTML("template.tmpl", filename, string(fileContent))
 	}
 
 	if len(os.Args) < 2 {
@@ -71,11 +69,11 @@ func readFile(file string) []byte {
 	return content
 }
 
-func writeToHTML(tmpl, filename, fileContent string) (int, float64) {
+func writeToHTML(tmpl, filePath, fileContent string) (int, float64) {
 	data := Data{fileContent}
 
-	htmlFilename := filename + ".html"
-	htmlFile, osErr := os.Create(htmlFilename)
+	htmlFilePath := strings.SplitN(filePath, ".", 2)[0] + ".html"
+	htmlFile, osErr := os.Create(htmlFilePath)
 	if osErr != nil {
 		log.Fatal(osErr)
 	}
@@ -86,7 +84,7 @@ func writeToHTML(tmpl, filename, fileContent string) (int, float64) {
 		log.Fatal(execErr)
 	}
 
-	return 1, getFileSize(htmlFilename)
+	return 1, getFileSize(htmlFilePath)
 }
 
 func writeAllFilesToHTML(directory string) (int, float64) {
@@ -99,12 +97,22 @@ func writeAllFilesToHTML(directory string) (int, float64) {
 	}
 
 	for _, file := range files {
-		if isTxt(file.Name()) {
-			filename := stripExt(file.Name())
-			fileContent := readFile(file.Name())
-			count, size := writeToHTML("template.tmpl", filename, string(fileContent))
-			fileCount += count
-			fileSize += size
+		path := directory + "/" + file.Name()
+
+		info, statErr := os.Stat(path)
+		if statErr != nil {
+			log.Fatal(statErr)
+		}
+
+		if info.IsDir() {
+			writeAllFilesToHTML(path)
+		} else {
+			if isTxt(file.Name()) {
+				fileContent := readFile(path)
+				count, size := writeToHTML("template.tmpl", path, string(fileContent))
+				fileCount += count
+				fileSize += size
+			}
 		}
 	}
 
@@ -114,10 +122,6 @@ func writeAllFilesToHTML(directory string) (int, float64) {
 func isTxt(filename string) bool {
 	fileExt := filename[len(filename)-4:]
 	return fileExt == ".txt"
-}
-
-func stripExt(filename string) string {
-	return strings.SplitN(filename, ".", 2)[0]
 }
 
 func getFileSize(filename string) float64 {
